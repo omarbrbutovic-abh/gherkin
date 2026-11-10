@@ -199,6 +199,24 @@ defmodule Gherkin.ParserTest do
           And serve with a smile
   """
 
+  @feature_with_scenario_starting_with_when """
+  Feature: Serve coffee
+
+    Scenario: Press the button
+      When I press the coffee button
+      Then I should be served a coffee
+  """
+
+  @feature_with_background_starting_with_when """
+  Feature: Serve coffee
+
+    Background:
+      When I walk up to the coffee machine
+
+    Scenario: Buy last coffee
+      Given there are 1 coffees left in the machine
+  """
+
   test "binary and stream is parsed exaclty the same" do
     from_binary =
       "test/fixtures/coffee.feature"
@@ -253,6 +271,30 @@ defmodule Gherkin.ParserTest do
 
     %{scenarios: [%{steps: steps} | _]} = parse_feature(@feature_text)
     assert expected_steps == steps
+  end
+
+  test "A scenario starting with a When step does not treat it as description" do
+    expected_steps = [
+      %Step{keyword: "When", text: "I press the coffee button", line: 4},
+      %Step{keyword: "Then", text: "I should be served a coffee", line: 5}
+    ]
+
+    %{scenarios: [%{description: description, steps: steps}]} =
+      parse_feature(@feature_with_scenario_starting_with_when)
+
+    assert description == ""
+    assert expected_steps == steps
+  end
+
+  test "A background starting with a When step does not treat it as description" do
+    expected_steps = [
+      %Step{keyword: "When", text: "I walk up to the coffee machine", line: 4}
+    ]
+
+    %{background_steps: background_steps} =
+      parse_feature(@feature_with_background_starting_with_when)
+
+    assert expected_steps == background_steps
   end
 
   test "Parses the expected background steps" do

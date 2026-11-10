@@ -20,7 +20,8 @@ defmodule Gherkin.Parsers.DescriptionParser do
     "Given",
     "Then",
     "And",
-    "But"
+    "But",
+    "When"
   ]
   defp starts_with_keyword?(line) do
     String.starts_with?(line, @all_keywords)
